@@ -802,7 +802,11 @@ void loop()
           puissA = (float)linkyNbImpsTemp * 3600000.0 / float(intervmsLinky);
           firstmsImpLinky=lastmsImpLinkyTemp;        
           Serial.print(puissA);
-          Serial.println("W");
+          Serial.print("W");
+          Serial.print("   linkyNbImpsTemp = ");
+          Serial.print(linkyNbImpsTemp);
+          Serial.print("   intervmsLinky = ");
+          Serial.println(intervmsLinky);
           affLCDPuissA();
           //setPuissASQL();
           setPuissAHTTP();
