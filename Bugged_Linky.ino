@@ -19,15 +19,15 @@
 
 #define TCAADDR 0x70
 #define DHTTYPE DHT22
-#define LINKYPIN 2 //9
+#define LINKYPIN 3 
 #define PLUVIOPIN 18
 #define ANEMOPIN  19
 #define LUMPIN 28
 #define SCROFFPIN 36
 #define SCRONPIN 37
-#define TH2PIN 32 //5
-#define TH3PIN 33 //3
-#define TH4PIN 34 //4
+#define TH2PIN 32 
+#define TH3PIN 33 
+#define TH4PIN 34 
 #define BTN1PIN 41
 #define BTN2PIN 44
 #define LEDBLANCHEPIN 42
@@ -35,6 +35,8 @@
 #define LEDROUGEPIN 45
 #define LEDBLEUEPIN 35
 #define WINDDIRPIN A1
+
+#define INTMINLINKY 496
 
 unsigned long msAnemo = 0;
 unsigned long msPluvio = 0;
@@ -66,7 +68,7 @@ float cumulPluie = 0.0;
 long puissA;
 unsigned long firstmsImpLinky=0;
 volatile unsigned long lastmsImpLinky=0;
-volatile int linkyNbImps=0;
+volatile int linkyNbImps=-1;
 int lidarStrength; //signal strength of LiDAR
 float lidarTemp;
 int check; //save check value
@@ -134,8 +136,8 @@ Timezone myTZ(myDST, mySTD);
 TimeChangeRule *tcr;
 
 IPAddress mysqlIP(192, 168, 1, 39); // IP of the MySQL *server* here
-char mysqlLogin[] = "###########";
-char mysqlPass[] = "######################";
+char mysqlLogin[] = "##########";
+char mysqlPass[] = "#########################";
 
 const int HTTP_PORT = 80;
 const String HTTP_METHOD = "GET"; // or POST
@@ -158,7 +160,7 @@ void setLidarSampleFrequency()
   uart_w[5] = 0;
   for (j = 0; j < 5; j++)
     uart_w[5] += uart_w[j];
-  for (j = 0; j <= 6; j++)
+  for (j = 0; j < 6; j++)
     Serial2.write(uart_w[j]);
   delay(200);
 }
@@ -665,7 +667,7 @@ void getNTPTime()
 void mqttConnect()
 {
   Serial.print("Tentative de connexion MQTT");
-  while (!mqtt.connect("192.168.1.39", "######", "###########"))
+  while (!mqtt.connect("192.168.1.39", "########", "##############"))
   {
     Serial.print(".");
     delay(1000);
@@ -709,6 +711,19 @@ void setup()
   pinMode(LINKYPIN, INPUT_PULLUP);
   pinMode(SCRONPIN, INPUT_PULLUP);
   pinMode(SCROFFPIN, INPUT_PULLUP);
+
+  pinMode(2, INPUT_PULLUP);
+  pinMode(4, INPUT_PULLUP);
+  pinMode(5, INPUT_PULLUP);
+  pinMode(6, INPUT_PULLUP);
+  pinMode(7, INPUT_PULLUP);
+  pinMode(8, INPUT_PULLUP);
+  pinMode(9, INPUT_PULLUP);
+  pinMode(10, INPUT_PULLUP);
+  pinMode(11, INPUT_PULLUP);
+  pinMode(12, INPUT_PULLUP);
+  pinMode(13, INPUT_PULLUP);
+  
 
   setLedRouge(HIGH);
   digitalWrite(LEDJAUNEPIN, HIGH);
@@ -768,11 +783,12 @@ void loop()
     int btn2 = digitalRead(BTN2PIN);
     if (btn2 != lastBtn2)
     {
-    if (btn2 == LOW)
-    {
-      lcd.clear();
-      affLCD();
-    }
+      if (btn2 == LOW)
+      {
+        Serial.println("Bouton 2");
+        lcd.clear();
+        affLCD();
+      }
     lastBtn2 = btn2;
     }
 
@@ -785,7 +801,7 @@ void loop()
   int linkyNbImpsTemp = linkyNbImps;
   unsigned long lastmsImpLinkyTemp = lastmsImpLinky;
   interrupts();
-  if (linkyNbImpsTemp!=0)
+  if (linkyNbImpsTemp>0)
   {
     if (lastmsImpLinkyTemp!=0)
     {
@@ -803,10 +819,12 @@ void loop()
           firstmsImpLinky=lastmsImpLinkyTemp;        
           Serial.print(puissA);
           Serial.print("W");
-          Serial.print("   linkyNbImpsTemp = ");
+          Serial.print("   ");
           Serial.print(linkyNbImpsTemp);
-          Serial.print("   intervmsLinky = ");
-          Serial.println(intervmsLinky);
+          Serial.print(" / ");
+          Serial.print(intervmsLinky);
+          Serial.println(" ms");
+          
           affLCDPuissA();
           //setPuissASQL();
           setPuissAHTTP();
