@@ -13,7 +13,6 @@
 #include <Timezone.h>
 #include <ThreeWire.h>
 #include <RtcDS1302.h>
-#include <util/atomic.h>
 
 #define TCAADDR 0x70
 #define DHTTYPE DHT22
@@ -115,7 +114,6 @@ byte char00[8] = {
 
 MySQL_Connection sqlConn((EthernetClient *)&ethClient);
 
-char DoW[][7] = {"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
 ThreeWire threeWire(24, 22, 26); // RST DAT CLK
 RtcDS1302<ThreeWire> Rtc(threeWire);
 
@@ -131,8 +129,8 @@ Timezone myTZ(myDST, mySTD);
 TimeChangeRule *tcr;
 
 IPAddress mysqlIP(192, 168, 1, 39); // IP of the MySQL *server* here
-char mysqlLogin[] = "##################";
-char mysqlPass[] = "#########################";
+char mysqlLogin[] = "#############";
+char mysqlPass[] = "###############################";
 
 const int HTTP_PORT = 80;
 const String HTTP_METHOD = "GET"; // or POST
@@ -382,7 +380,7 @@ void setPuissAHTTP()
   }
   setLedRouge(LOW);
 
-  String request = "GET /caverne/setLinkyPuissanceActive.php?pa=" + String(puissA); + " HTTP/1.0\r\n";
+  String request = "GET /caverne/setLinkyPuissanceActive.php?pa=" + String(puissA) + " HTTP/1.0\r\n";
   //Serial.print(request);
   ethClient.print(request);
   ethClient.print("\r\n");  // empty line -> end of header
@@ -453,7 +451,7 @@ int lcdXOffsetFloat(float v, int nc)
   return (d);
 }
 
-void affValLCD(float v, int x, int y, int nc, int nd, bool neg, int lngMax)
+void affValLCD(float v, int x, int y, unsigned int nc, unsigned int nd, bool neg, unsigned int lngMax)
 {
   int m = pow(10, nd);
   float a = float(round(v * m));
@@ -472,7 +470,7 @@ void affValLCD(float v, int x, int y, int nc, int nd, bool neg, int lngMax)
   lcd.print(r);
 }
 
-void affValLCDInt(int v, int x, int y, int nc, bool neg, int lngMax, int ncMin)
+void affValLCDInt(int v, int x, int y, unsigned int nc, bool neg, unsigned int lngMax, unsigned int ncMin)
 {
   String r = String(v);
   while (r.length() < ncMin)
@@ -580,6 +578,7 @@ void setScrBacklight(bool force)
   }
 }
 
+/*
 void setPuissASQL()
 {
   MySQL_Cursor *cur_mem = new MySQL_Cursor(&sqlConn);
@@ -589,6 +588,7 @@ void setPuissASQL()
   cur_mem->execute(req);
   delete cur_mem;
 }
+*/
 
 // send an NTP request to the time server at the given address
 void sendNTPpacket(const char * address) {
