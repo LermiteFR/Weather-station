@@ -13,9 +13,7 @@
 #include <Timezone.h>
 #include <ThreeWire.h>
 #include <RtcDS1302.h>
-//#include <SimplyAtomic.h>
 #include <util/atomic.h>
-#include <MQTT.h>
 
 #define TCAADDR 0x70
 #define DHTTYPE DHT22
@@ -35,8 +33,6 @@
 #define LEDROUGEPIN 45
 #define LEDBLEUEPIN 35
 #define WINDDIRPIN A1
-
-#define INTMINLINKY 496
 
 unsigned long msAnemo = 0;
 unsigned long msPluvio = 0;
@@ -118,7 +114,6 @@ byte char00[8] = {
                };
 
 MySQL_Connection sqlConn((EthernetClient *)&ethClient);
-MQTTClient mqtt;
 
 char DoW[][7] = {"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
 ThreeWire threeWire(24, 22, 26); // RST DAT CLK
@@ -136,7 +131,7 @@ Timezone myTZ(myDST, mySTD);
 TimeChangeRule *tcr;
 
 IPAddress mysqlIP(192, 168, 1, 39); // IP of the MySQL *server* here
-char mysqlLogin[] = "##########";
+char mysqlLogin[] = "##################";
 char mysqlPass[] = "#########################";
 
 const int HTTP_PORT = 80;
@@ -664,18 +659,6 @@ void getNTPTime()
   Ethernet.maintain();
 }
 
-void mqttConnect()
-{
-  Serial.print("Tentative de connexion MQTT");
-  while (!mqtt.connect("192.168.1.39", "########", "##############"))
-  {
-    Serial.print(".");
-    delay(1000);
-  }
-  Serial.println("\nMQTT Connecté");
-  mqtt.subscribe("/arduino/mega-0/ir-barrier_enable");
-}
-
 void initDS1302()
 {
   Rtc.Begin();
@@ -734,7 +717,6 @@ void setup()
   Udp.begin(localUdpPort);
   initLCD();
   initDS1302();
-  //mqttConnect();
   //setMysql();
   delay(300);
   setLidarSampleFrequency();
